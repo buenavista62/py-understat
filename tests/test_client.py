@@ -74,11 +74,20 @@ def _payloads() -> dict[str, dict[str, Any]]:
     player_statistic = _player_statistic()
     match = _match()
     shot = _shot()
+    upcoming_match = {
+        "id": "32255",
+        "isResult": False,
+        "h": {"id": "1", "title": "Home", "short_title": "HOM"},
+        "a": {"id": "2", "title": "Away", "short_title": "AWY"},
+        "goals": {"h": None, "a": None},
+        "xG": {"h": None, "a": None},
+        "datetime": "2026-09-04 18:30:00",
+    }
     return {
         "/getLeagueData/EPL/2025": {
             "teams": {"1": {"id": "1", "title": "Home", "history": []}},
             "players": [player_statistic],
-            "dates": [match],
+            "dates": [match, upcoming_match],
         },
         "/getTeamData/Home/2025": {
             "players": [player_statistic],
@@ -164,6 +173,10 @@ def test_all_resources_use_ajax_and_normalize_models() -> None:
 
         assert league.players[0].expected_goals == 0.8
         assert league.matches[0].goals.home == 2
+        assert league.matches[1].is_result is False
+        assert league.matches[1].goals.home is None
+        assert league.matches[1].expected_goals.away is None
+        assert league.matches[1].forecast is None
         assert team.statistics["situation"]["OpenPlay"].expected_goals == 0.8
         assert player.shots[0].expected_goals == 0.4
         assert match.shots["h"][0].expected_goals == 0.4
