@@ -39,7 +39,7 @@ def _package_version() -> str:
     try:
         return version("py-understat")
     except PackageNotFoundError:
-        return "0.1.0"
+        return "development"
 
 
 class League(StrEnum):
