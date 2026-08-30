@@ -2,10 +2,30 @@
 
 An asynchronous, typed client for football statistics published by [Understat](https://understat.com/). This is an unofficial client and is not affiliated with Understat.
 
+![PyPI version](https://img.shields.io/pypi/v/py-understat.svg)
+![Python versions](https://img.shields.io/pypi/pyversions/py-understat.svg)
+![License](https://img.shields.io/github/license/buenavista62/py-understat.svg)
+![CI](https://img.shields.io/github/actions/workflow/status/buenavista62/py-understat/ci.yml.svg?label=CI)
+![GitHub release](https://img.shields.io/github/v/release/buenavista62/py-understat.svg)
+
+## Features
+
+- **Async first** — one `httpx.AsyncClient` owned by the client; use it as an async context manager.
+- **Typed snapshots** — frozen Pydantic models with native Python values; unknown source fields stay readable via `extra`.
+- **Resilient** — bounded exponential backoff for transport failures, `429`, and `5xx`; honors `Retry-After`.
+- **Strict identifiers** — invalid leagues, seasons, team handles, and IDs fail locally before any request.
+- **Zero magic** — no hidden caching or global rate limiting; you stay in control of immutable snapshots.
+
+## Requirements
+
+- Python **3.13 or newer** (the package is developed and tested against 3.13+)
+
 ## Install
 
 ```bash
 uv add py-understat
+# or
+pip install py-understat
 ```
 
 From a checkout, install the package and its development tools with:
@@ -14,9 +34,7 @@ From a checkout, install the package and its development tools with:
 uv sync --all-groups
 ```
 
-## Query data
-
-`UnderstatClient` owns its HTTP resources. Use it as an async context manager.
+## Quick start
 
 ```python
 import asyncio
@@ -35,7 +53,16 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+## Resources
+
 Each `get()` call returns the complete snapshot Understat supplies for that resource:
+
+| Resource | Query | Snapshot |
+| --- | --- | --- |
+| League | `client.league(League.BUNDESLIGA).get("2025/2026")` | `LeagueSnapshot` |
+| Team | `client.team("Bayern_Munich").get("2025/2026")` | `TeamSnapshot` |
+| Player | `client.player(8260).get()` | `PlayerSnapshot` |
+| Match | `client.match(28778).get()` | `MatchSnapshot` |
 
 ```python
 async with UnderstatClient() as client:
@@ -56,18 +83,30 @@ match.shots  # Shot records grouped by home/away side
 
 ## Identifiers
 
-- `League` is an enum containing Understat's six supported competitions.
+- `League` is an enum with Understat's six competitions: `EPL`, `LA_LIGA`, `BUNDESLIGA`, `SERIE_A`, `LIGUE_1`, `RFPL`.
 - Team queries take the exact Understat team handle, such as `"Manchester_United"`.
 - Player and Match queries take a positive Understat integer ID.
-- League and Team queries take a competition season written as `"YYYY/YYYY+1"`, for example `"2025/2026"`. `Season("2025/2026")` is available when a reusable value is useful.
+- League and Team queries take a competition season as `"YYYY/YYYY+1"`, for example `"2025/2026"`. Reuse a validated value with `Season("2025/2026")`; seasons before 2014/2015 are rejected (Understat data starts there).
 
-Invalid identifiers fail locally with `InvalidIdentifierError` before making a request.
+Invalid identifiers fail locally with `InvalidIdentifierError` before any request is sent.
 
 ## Data and failures
 
-Known fields are normalized to native Python values: IDs and counts become `int`, expected-goal values become `float`, and source timestamps become `datetime`. Models are frozen, and source fields that the package does not yet name are available through each model's read-only `extra` mapping.
+Known fields are normalized to native Python values: IDs and counts become `int`, expected-goal values become `float`, and source timestamps become `datetime`. Models are frozen; source fields the package does not yet name remain available through each model's read-only `extra` mapping.
 
-The client retries temporary transport failures, `429`, and `5xx` responses with bounded exponential backoff. It honors `Retry-After` up to the configured maximum delay. Catch package-level errors rather than HTTPX implementation errors:
+The client retries temporary transport failures, `429`, and `5xx` responses with bounded exponential backoff (default `RetryPolicy(max_attempts=3, initial_delay=0.25, max_delay=4.0)`), honoring `Retry-After` up to the configured maximum delay. Tune it per client:
+
+```python
+from py_understat import RetryPolicy, UnderstatClient
+
+async with UnderstatClient(
+    timeout=10.0,
+    retry_policy=RetryPolicy(max_attempts=5, initial_delay=0.5, max_delay=8.0),
+) as client:
+    ...
+```
+
+Catch package-level errors rather than HTTPX implementation errors:
 
 ```python
 from py_understat import RateLimitError, ResourceNotFoundError, UnderstatError
@@ -84,3 +123,33 @@ except UnderstatError as error:
 ```
 
 The client sends an identifying user agent. It intentionally has no automatic cache or global rate limiter; callers needing either should apply them around immutable snapshots.
+
+## Development
+
+```bash
+uv sync --all-groups   # install package + development tools
+uv run ruff format .   # formatting
+uv run ruff check .    # linting
+uv run ty check        # type checking
+uv run pytest          # tests
+```
+
+CI runs all four checks on every push and pull request (`.github/workflows/ci.yml`), and again as a gate before every release.
+
+## Releases
+
+Releases are fully automated from a version tag:
+
+1. Bump the version in `pyproject.toml` (and `__version__` in `src/py_understat/__init__.py`).
+2. Push a tag: `git tag v0.1.3 && git push origin v0.1.3`.
+
+The [`publish` workflow](.github/workflows/publish.yml) then:
+
+1. Runs formatting, lint, type checks, and tests.
+2. Builds the sdist and wheel.
+3. Publishes both to PyPI via trusted publishing (no stored credentials).
+4. Creates a GitHub Release for the tag with the built distributions attached and auto-generated release notes.
+
+## License
+
+[MIT](LICENSE). Understat data remains the property of its respective owners; this client is provided as-is without affiliation or warranty.
