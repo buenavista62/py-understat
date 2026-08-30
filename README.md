@@ -136,6 +136,10 @@ uv run pytest          # tests
 
 CI runs all four checks on every push and pull request (`.github/workflows/ci.yml`), and again as a gate before every release.
 
+## Collaboration
+
+See [collaboration.md](collaboration.md) for branch protection, pull request, development, and release guidance.
+
 ## Releases
 
 Releases are fully automated from a version tag:
