@@ -9,6 +9,9 @@ dependencies = [
     "pydantic>=2.13.5",
 ]
 
+[project.urls]
+Repository = "https://github.com/buenavista62/py-understat"
+
 [dependency-groups]
 dev = [
     "ipykernel>=7.3.0",
