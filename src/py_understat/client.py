@@ -119,7 +119,7 @@ class UnderstatClient:
             follow_redirects=True,
             headers={
                 **_AJAX_HEADERS,
-                "User-Agent": f"py-understat/{_package_version()} (+https://github.com/sercan/py-understat)",
+                "User-Agent": f"py-understat/{_package_version()} (+https://github.com/buenavista62/py-understat)",
             },
             timeout=timeout,
             transport=transport,
@@ -231,7 +231,7 @@ class UnderstatClient:
         except ValueError:
             try:
                 retry_at = parsedate_to_datetime(retry_after)
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 return self._backoff_delay(attempt)
             if retry_at.tzinfo is None:
                 retry_at = retry_at.replace(tzinfo=UTC)

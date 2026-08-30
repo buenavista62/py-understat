@@ -150,6 +150,9 @@ def test_all_resources_use_ajax_and_normalize_models() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["X-Requested-With"] == "XMLHttpRequest"
         assert request.headers["User-Agent"].startswith("py-understat/")
+        assert request.headers["User-Agent"].endswith(
+            "(+https://github.com/buenavista62/py-understat)"
+        )
         return httpx.Response(200, json=payloads[request.url.path])
 
     async def exercise() -> None:
