@@ -145,7 +145,7 @@ See [collaboration.md](collaboration.md) for branch protection, pull request, de
 Releases are fully automated from a version tag:
 
 1. Bump the version in `pyproject.toml` (and `__version__` in `src/py_understat/__init__.py`).
-2. Push a tag: `git tag v0.1.3 && git push origin v0.1.3`.
+2. Push a matching tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
 The [`publish` workflow](.github/workflows/publish.yml) then:
 
