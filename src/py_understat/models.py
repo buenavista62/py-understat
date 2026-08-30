@@ -30,17 +30,24 @@ class TeamReference(SourceModel):
 
 
 class Score(SourceModel):
-    """A value split by home and away team."""
+    """A value split by home and away team.
 
-    home: int = Field(alias="h")
-    away: int = Field(alias="a")
+    ``None`` entries mark an unplayed fixture (new-season snapshots contain
+    scheduled matches without results).
+    """
+
+    home: int | None = Field(alias="h")
+    away: int | None = Field(alias="a")
 
 
 class ExpectedGoals(SourceModel):
-    """Expected goals split by home and away team."""
+    """Expected goals split by home and away team.
 
-    home: float = Field(alias="h")
-    away: float = Field(alias="a")
+    ``None`` entries mark an unplayed fixture without xG data.
+    """
+
+    home: float | None = Field(alias="h")
+    away: float | None = Field(alias="a")
 
 
 class Forecast(SourceModel):
@@ -61,7 +68,7 @@ class MatchRecord(SourceModel):
     goals: Score
     expected_goals: ExpectedGoals = Field(alias="xG")
     played_at: datetime = Field(alias="datetime")
-    forecast: Forecast
+    forecast: Forecast | None = None
     side: str | None = None
     result: str | None = None
 
