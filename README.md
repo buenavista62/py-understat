@@ -2,11 +2,11 @@
 
 An asynchronous, typed client for football statistics published by [Understat](https://understat.com/). This is an unofficial client and is not affiliated with Understat.
 
-![PyPI version](https://img.shields.io/pypi/v/py-understat.svg)
-![Python versions](https://img.shields.io/pypi/pyversions/py-understat.svg)
-![License](https://img.shields.io/github/license/buenavista62/py-understat.svg)
-![CI](https://img.shields.io/github/actions/workflow/status/buenavista62/py-understat/ci.yml.svg?label=CI)
-![GitHub release](https://img.shields.io/github/v/release/buenavista62/py-understat.svg)
+![PyPI version](https://img.shields.io/pypi/v/py-understat.svg?cacheSeconds=300)
+![Python versions](https://img.shields.io/pypi/pyversions/py-understat.svg?cacheSeconds=300)
+![License](https://img.shields.io/github/license/buenavista62/py-understat.svg?cacheSeconds=300)
+![CI](https://img.shields.io/github/actions/workflow/status/buenavista62/py-understat/ci.yml.svg?label=CI&cacheSeconds=300)
+![GitHub release](https://img.shields.io/github/v/release/buenavista62/py-understat.svg?cacheSeconds=300)
 
 ## Features
 
