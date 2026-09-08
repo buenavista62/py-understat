@@ -12,7 +12,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Self, TypeVar
 from urllib.parse import quote
 
-import httpx
+import httpx2
 from pydantic import ValidationError
 
 from .exceptions import (
@@ -109,12 +109,12 @@ class UnderstatClient:
     def __init__(
         self,
         *,
-        timeout: float | httpx.Timeout | None = 20.0,
+        timeout: float | httpx2.Timeout | None = 20.0,
         retry_policy: RetryPolicy | None = None,
-        transport: httpx.AsyncBaseTransport | None = None,
+        transport: httpx2.AsyncBaseTransport | None = None,
     ) -> None:
         self._retry_policy = retry_policy or _DEFAULT_RETRY_POLICY
-        self._http = httpx.AsyncClient(
+        self._http = httpx2.AsyncClient(
             base_url=_BASE_URL,
             follow_redirects=True,
             headers={
@@ -132,7 +132,7 @@ class UnderstatClient:
         await self.aclose()
 
     async def aclose(self) -> None:
-        """Close the underlying :class:`httpx.AsyncClient`."""
+        """Close the underlying :class:`httpx2.AsyncClient`."""
         await self._http.aclose()
 
     def league(self, league: League) -> _LeagueResource:
@@ -164,13 +164,13 @@ class UnderstatClient:
             ) from error
 
     async def _get_json(self, path: str) -> dict[str, Any]:
-        response: httpx.Response | None = None
+        response: httpx2.Response | None = None
         last_error: Exception | None = None
 
         for attempt in range(self._retry_policy.max_attempts):
             try:
                 response = await self._http.get(path)
-            except httpx.RequestError as error:
+            except httpx2.RequestError as error:
                 last_error = error
                 if attempt + 1 == self._retry_policy.max_attempts:
                     break
@@ -222,7 +222,7 @@ class UnderstatClient:
             self._retry_policy.max_delay,
         )
 
-    def _retry_delay(self, response: httpx.Response, attempt: int) -> float:
+    def _retry_delay(self, response: httpx2.Response, attempt: int) -> float:
         retry_after = response.headers.get("Retry-After")
         if retry_after is None:
             return self._backoff_delay(attempt)
@@ -319,9 +319,9 @@ def _validate_id(value: int, name: str) -> int:
     return value
 
 
-def _response_error(response: httpx.Response) -> httpx.HTTPStatusError:
+def _response_error(response: httpx2.Response) -> httpx2.HTTPStatusError:
     try:
         response.raise_for_status()
-    except httpx.HTTPStatusError as error:
+    except httpx2.HTTPStatusError as error:
         return error
     raise RuntimeError("response was expected to be an error")
