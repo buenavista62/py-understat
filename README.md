@@ -10,7 +10,7 @@ An asynchronous, typed client for football statistics published by [Understat](h
 
 ## Features
 
-- **Async first** — one `httpx.AsyncClient` owned by the client; use it as an async context manager.
+- **Async first** — one `httpx2.AsyncClient` owned by the client; use it as an async context manager.
 - **Typed snapshots** — frozen Pydantic models with native Python values; unknown source fields stay readable via `extra`.
 - **Resilient** — bounded exponential backoff for transport failures, `429`, and `5xx`; honors `Retry-After`.
 - **Strict identifiers** — invalid leagues, seasons, team handles, and IDs fail locally before any request.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any, cast
 
-import httpx
+import httpx2
 import pytest
 
 from py_understat import (
@@ -156,16 +156,16 @@ def _payloads() -> dict[str, dict[str, Any]]:
 def test_all_resources_use_ajax_and_normalize_models() -> None:
     payloads = _payloads()
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         assert request.headers["X-Requested-With"] == "XMLHttpRequest"
         assert request.headers["User-Agent"].startswith("py-understat/")
         assert request.headers["User-Agent"].endswith(
             "(+https://github.com/buenavista62/py-understat)"
         )
-        return httpx.Response(200, json=payloads[request.url.path])
+        return httpx2.Response(200, json=payloads[request.url.path])
 
     async def exercise() -> None:
-        async with UnderstatClient(transport=httpx.MockTransport(handler)) as client:
+        async with UnderstatClient(transport=httpx2.MockTransport(handler)) as client:
             league = await client.league(League.EPL).get("2025/2026")
             team = await client.team("Home").get(Season("2025/2026"))
             player = await client.player(7).get()
@@ -187,16 +187,16 @@ def test_all_resources_use_ajax_and_normalize_models() -> None:
 def test_retry_policy_retries_rate_limits_and_honors_retry_after() -> None:
     attempts = 0
 
-    def handler(_: httpx.Request) -> httpx.Response:
+    def handler(_: httpx2.Request) -> httpx2.Response:
         nonlocal attempts
         attempts += 1
         if attempts == 1:
-            return httpx.Response(429, headers={"Retry-After": "0"})
-        return httpx.Response(200, json=_payloads()["/getLeagueData/EPL/2025"])
+            return httpx2.Response(429, headers={"Retry-After": "0"})
+        return httpx2.Response(200, json=_payloads()["/getLeagueData/EPL/2025"])
 
     async def exercise() -> None:
         async with UnderstatClient(
-            transport=httpx.MockTransport(handler),
+            transport=httpx2.MockTransport(handler),
             retry_policy=RetryPolicy(max_attempts=2, initial_delay=0, max_delay=0),
         ) as client:
             await client.league(League.EPL).get("2025/2026")
@@ -208,7 +208,7 @@ def test_retry_policy_retries_rate_limits_and_honors_retry_after() -> None:
 def test_client_raises_resource_not_found() -> None:
     async def exercise() -> None:
         async with UnderstatClient(
-            transport=httpx.MockTransport(lambda _: httpx.Response(404)),
+            transport=httpx2.MockTransport(lambda _: httpx2.Response(404)),
         ) as client:
             with pytest.raises(ResourceNotFoundError):
                 await client.player(7).get()
